@@ -1,0 +1,52 @@
+1> Create Database & Table
+
+CREATE DATABASE IF NOT EXISTS geo_test;
+USE geo_test;
+
+DROP TABLE IF EXISTS markers;
+CREATE TABLE markers (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    name VARCHAR(255),
+    lat DOUBLE,
+    lng DOUBLE
+);
+
+2> Insert Random Location Data (Outside Rajkot)
+INSERT INTO markers (name, lat, lng) VALUES
+('Location A', 28.6139, 77.2090),  -- New Delhi
+('Location B', 12.9716, 77.5946),  -- Bangalore
+('Location C', 19.0760, 72.8777),  -- Mumbai
+('Location D', 13.0827, 80.2707),  -- Chennai
+('Location E', 22.5726, 88.3639),  -- Kolkata
+('Location F', 26.9124, 75.7873),  -- Jaipur
+('Location G', 23.2599, 77.4126),  -- Bhopal
+('Location H', 21.1702, 72.8311),  -- Surat
+('Location I', 17.3850, 78.4867),  -- Hyderabad
+('Location J', 15.2993, 74.1240);  -- Goa
+
+3> Distance Calculation Query
+SET @lat = 22.285781;  -- Center Latitude
+SET @lng = 70.756249;  -- Center Longitude
+SET @distance = 2000;  -- Distance in KM (to include results)
+SET @earth_radius = 6371.0;  -- Earth's radius in KM
+
+SELECT * FROM (
+    SELECT 
+        id, 
+        name, 
+        lat, 
+        lng,
+        ROUND(ABS(
+            (
+                ACOS(
+                    SIN(@lat * PI() / 180) * SIN(lat * PI() / 180) +
+                    COS(@lat * PI() / 180) * COS(lat * PI() / 180) *
+                    COS(ABS(@lng - lng) * PI() / 180)
+                ) * @earth_radius
+            )
+        ), 2) AS distance
+    FROM markers
+) AS results
+WHERE distance <= @distance
+ORDER BY distance
+LIMIT 15;
